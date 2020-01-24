@@ -23,6 +23,18 @@ if(req.url==='/kindly'){
     filePath=path.join(__dirname,'public', 'kindly.html')
 }
 
+if(req.url==='/good'){
+    filePath=path.join(__dirname,'public', 'good.html')
+}
+
+if(req.url==='/bad'){
+    filePath=path.join(__dirname,'public', 'bad.html')
+}
+
+if(req.url==='/evil'){
+    filePath=path.join(__dirname,'public', 'evil.html')
+}
+
 
 // = path.join(__dirname,'public', req.url==='/'? 'index.html': req.url);
 
