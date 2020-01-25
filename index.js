@@ -1,74 +1,52 @@
 const http = require('http');
 const path = require('path');
+const pug = require('pug');
 const fs = require('fs');
+const util = require('util');
+const readFile = util.promisify(fs.readFile);
 
-const server=http.createServer((req, res)=>{
+const server=http.createServer(async (req, res)=>{
 console.log('req.url', req.url);
-
+let content;
 
 let filePath = path.join(__dirname,'public', req.url);
-if(req.url==='/'){
-    filePath=path.join(__dirname,'public', 'index.html')
-}
-if(req.url==='/clever'){
-    filePath=path.join(__dirname,'public', 'clever.html')
-}
-if(req.url==='/cheerful'){
-    filePath=path.join(__dirname,'public', 'cheerful.html')
-}
-if(req.url==='/handsome'){
-    filePath=path.join(__dirname,'public', 'handsome.html')
-}
-if(req.url==='/kindly'){
-    filePath=path.join(__dirname,'public', 'kindly.html')
-}
-
-if(req.url==='/good'){
-    filePath=path.join(__dirname,'public', 'good.html')
-}
-
-if(req.url==='/bad'){
-    filePath=path.join(__dirname,'public', 'bad.html')
-}
-
-if(req.url==='/evil'){
-    filePath=path.join(__dirname,'public', 'evil.html')
-}
 
 
 // = path.join(__dirname,'public', req.url==='/'? 'index.html': req.url);
 
 const ext= path.extname(filePath);
-let contentType = 'text/html'
+let contentType = 'text/html';
+
+if (ext === '.css' || ext === ".js") {
+    try{
+        content = await readFile(filePath);
+    } catch(err) {throw err}
+}
+
 
 switch(ext){
     case '.css':
-        contentType = 'text/css'
+        contentType = 'text/css';
         break
     
     case '.js': 
-        contentType = 'text/javascript'
+        contentType = 'text/javascript';
         break
 
     default:
         contentType = 'text/html'
+        const brandName = req.url.slice(1,req.url.length);
+        content = pug.renderFile(path.join(__dirname,'public', 'template.pug'), {
+            name: brandName,
+            styleLink: req.url==='/'? './': `./brands/${brandName}/`
+          });
 }
 
-
-console.log('filePath', filePath);
-
-        fs.readFile(filePath, (err, content)=>{
-            if(err){
-                    res.writeHead(500);
-                    res.end('Server Error')
-                }
-             else {
-                res.writeHead(200, {
-                    'Content-Type': contentType
-                })
-                res.end(content)
-            }
+    res.writeHead(200, {
+                'Content-Type': contentType
         })
+    res.end(content);
+       
 })
 
 const PORT = process.env.PORT || 3000;
